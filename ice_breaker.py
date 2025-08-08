@@ -42,7 +42,7 @@ def ice_breake_with(name:str) -> str:
 if __name__ == '__main__':
     load_dotenv()
     print("Ice Break!")
-    result = ice_breake_with(name="Vera Bereczky")  # Store the result
+    result = ice_breake_with(name="Tatyjana Ankudo")  # Store the result
     print(result.content)
     # print("Ice breaker enter")
     # # print(os.environ['OPENAI_API_KEY'])
