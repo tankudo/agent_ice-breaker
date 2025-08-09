@@ -27,6 +27,9 @@ def scrape_linkedin_profile(linkedin_profile_url: str, mock:bool=False):
             for k, v in raw_data.items()
             if v not in ([], "", "", None) and k not in ("certifications")
         } 
+        # print(f"API Response status: {response.status_code if response else 'No response'}")
+        # print(f"Raw data: {raw_data}")
+        # print(f"Raw data type: {type(raw_data)}")
         return data
 
 if __name__ == "__main__":
