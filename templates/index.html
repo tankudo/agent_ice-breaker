@@ -103,7 +103,7 @@
                             console.log("ice_breakers:", data.ice_breakers);
                             console.log("interests:", data.interests);
                             
-                            document.getElementById("profile-pic").src = data.picture_url;
+                            document.getElementById("profile-pic").src = data.profile_pic;
                             document.getElementById("summary").textContent = data.summary;
                             createHtmlList(document.getElementById("facts"), data.facts);
                             createHtmlList(document.getElementById("ice-breakers"), data.ice_breakers);

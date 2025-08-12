@@ -38,8 +38,10 @@ def process():
         print(f"🔍 Result dict: {result}")
         
         # Handle None profile_pic - use photo_url as fallback
-        if result.get('profile_pic') is None:
-            result['profile_pic'] = photo_url or "https://via.placeholder.com/300"
+        if photo_url and photo_url.startswith("http"):
+            result['profile_pic'] = photo_url
+        elif result.get('profile_pic') is None:
+            result['profile_pic'] = "https://via.placeholder.com/300"
         
         # Debug: Print final result
         print(f"🔍 Final result being sent: {result}")

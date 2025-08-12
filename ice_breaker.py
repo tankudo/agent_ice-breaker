@@ -1,4 +1,5 @@
 import os
+
 from output_parser import summry_parser, Summary
 from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
@@ -49,7 +50,8 @@ def ice_breake_with(name:str) -> Tuple[Summary, str]:
 
     llm = ChatOllama(
         # model="qwen2.5:7b"
-        model='llama3:latest'
+        model='llama3:latest',
+        temperature=0.2
     )
     # chain = summary_prompt_template | llm
     chain = summary_prompt_template | llm | summry_parser
