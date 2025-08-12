@@ -61,7 +61,7 @@ An intelligent web application that generates personalized ice breakers for netw
            React Pattern        Validated Results
   ```
 - **Features**:
-  - Exact name matching (prevents "Philip Mobini" when searching "Forzad Mobini")
+  - Exact name matching (prevents "AAA DDD" when searching "BBB DDD")
   - First/last name validation
   - Fallback mechanisms
   - **Model**: Configurable (Ollama/Claude/OpenAI)
@@ -103,17 +103,17 @@ An intelligent web application that generates personalized ice breakers for netw
 
 ### Detailed Data Pipeline:
 ```python
-Web Form: "Forzad Mobini"
+Web Form: "BBB DDD"
     ↓ (Flask POST /process)
-request.form.get('name') = "Forzad Mobini"
+request.form.get('name') = "BBB DDD"
     ↓ (ice_breake_with)
-precise_linkedin_lookup("Forzad Mobini")
+precise_linkedin_lookup("BBB DDD")
     ↓ (AI Agent with temperature=0)
-"https://linkedin.com/in/forzad-mobini-12345"
+"https://linkedin.com/in/BBB-DDD-12345"
     ↓ (scrape_linkedin_profile)
 {
-    "firstName": "Forzad",
-    "lastName": "Mobini", 
+    "firstName": "BBB",
+    "lastName": "DDD", 
     "headline": "Software Engineer...",
     "photoUrl": "https://...",
     "experience": [...],
@@ -333,7 +333,7 @@ summary, photo = ice_breake_with(name, model_type="openai")    # Premium
 
 - **🌐 Web Interface**: Modern browser-based application
 - **🤖 Multi-Model AI**: Support for Ollama, Claude, and OpenAI
-- **🎯 Precise Matching**: Finds exact persons (Forzad ≠ Philip)
+- **🎯 Precise Matching**: Finds exact persons (BBB ≠ Philip)
 - **📊 Smart Extraction**: Structured profile analysis
 - **💬 Personalized Output**: Context-aware conversation starters
 - **🔒 Flexible Privacy**: Local models or cloud APIs
