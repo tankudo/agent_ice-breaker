@@ -67,7 +67,3 @@ def lookup (name: str) -> str:
                     break
 
     return linkedin_profile_url
-
-# if __name__ == "__main__":
-#     linkedin_url = lookup(name="Nikos Kotoupas")
-#     print(linkedin_url)
