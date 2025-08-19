@@ -1,3 +1,59 @@
+<style>
+    .profiles-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .profile-option {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .profile-option:hover {
+        border-color: #4A90E2;
+        background: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .profile-pic {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-right: 15px;
+        object-fit: cover;
+        border: 3px solid #e0e0e0;
+    }
+    
+    .profile-info {
+        flex: 1;
+        text-align: left;
+    }
+    
+    .profile-info strong {
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .profile-info small {
+        color: #666;
+        line-height: 1.4;
+    }
+    
+    .profile-info em {
+        color: #4A90E2;
+        font-size: 12px;
+    }
+    </style>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -61,7 +117,7 @@
                     console.log("Form submission prevented, processing...");
 
                     result.style.display = "none";
-                    spinner.style.display = "";
+                    spinner.style.display = "block";
 
                     const formData = new FormData(form);
                     const name = formData.get('name');
@@ -93,28 +149,25 @@
                         })
                         .then(data => {
                             console.log("Got data:", data);
-                            console.log("Data type:", typeof data);
-                            console.log("Data keys:", Object.keys(data));
+                            console.log("Data type:", data.type);
                             
                             if (data.error) {
                                 throw new Error(data.error);
                             }
-                            console.log("summary_and_facts:", data.summary_and_facts);
-                            console.log("ice_breakers:", data.ice_breakers);
-                            console.log("interests:", data.interests);
                             
-                            document.getElementById("profile-pic").src = data.profile_pic;
-                            document.getElementById("summary").textContent = data.summary;
-                            createHtmlList(document.getElementById("facts"), data.facts);
-                            createHtmlList(document.getElementById("ice-breakers"), data.ice_breakers);
-                            createHtmlList(document.getElementById("topics-of-interest"), data.topics_of_interest);
-
-                            spinner.style.display = "none";
-                            result.style.display = "";
+                            // Check if we got multiple profiles
+                            if (data.type === 'multiple_profiles') {
+                                console.log("✅ Multiple profiles detected!");
+                                console.log("Profiles:", data.profiles);
+                                showProfileSelection(data.profiles);
+                            } else {
+                                console.log("✅ Single profile result");
+                                showResults(data);
+                            }
                         })
                         .catch(error => {
                             console.error("Error occurred:", error);
-                            spinner.style.display = "none";
+                            spinner.style.display = "block";
                             alert("Error: " + error.message);
                         });
                 });
@@ -133,6 +186,161 @@
 
                 element.innerHTML = "";
                 element.appendChild(ul);
+            }
+            function selectProfile(profileUrl) {
+                let currentProfiles = [];
+                console.log("Profile selected:", profileUrl);
+                
+                // Find the selected profile data to get the picture
+                const selectedProfile = currentProfiles.find(p => p.url === profileUrl);
+                const selectedPicture = selectedProfile ? selectedProfile.picture : null;
+                
+                // Show spinner
+                spinner.style.display = "block";
+                result.style.display = "none";
+                
+                // Create form data for selected profile
+                const formData = new FormData();
+                formData.append('action', 'select');
+                formData.append('profile_url', profileUrl);
+                if (selectedPicture) {
+                    formData.append('profile_picture', selectedPicture); // Pass the working picture
+                }
+                
+                fetch(processUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) return response.json();
+                    throw new Error(`Request failed: ${response.status}`);
+                })
+                .then(data => {
+                    console.log("Got selected profile data:", data);
+                    
+                    // Use the picture from selection if available
+                    if (selectedPicture && (!data.profile_pic || data.profile_pic.includes('placeholder'))) {
+                        data.profile_pic = selectedPicture;
+                    }
+                    
+                    showResults(data);
+                })
+                .catch(error => {
+                    console.error("Error selecting profile:", error);
+                    spinner.style.display = "none";
+                    alert("Error: " + error.message);
+                });
+            }
+            function showResults(data) {
+                console.log("🖼️ Profile pic in data:", data.profile_pic);
+                console.log("🎯 showResults called with:", data);
+                
+                // First, restore the original result structure
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `
+                    <div style="text-align: center">
+                        <img id="profile-pic" src="" alt="Profile Picture" style="width: 300px; max-width: 100%; height: auto; border-radius: 50%; margin-bottom: 20px;">
+                    </div>
+                    <div>
+                        <h2>Summary</h2>
+                        <p id="summary"></p>
+                    </div>
+                    <div>
+                        <h2>Interesting Facts</h2>
+                        <div id="facts"></div>
+                    </div>
+                    <div>
+                        <h2>Ice Breakers</h2>
+                        <div id="ice-breakers"></div>
+                    </div>
+                    <div>
+                        <h2>Topics of Interest</h2>
+                        <div id="topics-of-interest"></div>
+                    </div>
+                `;
+                
+                // Enhanced image handling
+                const profilePic = document.getElementById("profile-pic");
+                const summary = document.getElementById("summary");
+                const facts = document.getElementById("facts");
+                const iceBreakers = document.getElementById("ice-breakers");
+                const topicsOfInterest = document.getElementById("topics-of-interest");
+                
+                // Better image fallback system
+                if (profilePic) {
+                    const originalUrl = data.profile_pic;
+                    console.log("🖼️ Setting image to:", originalUrl);
+                    const name = data.summary ? data.summary.split(' ')[0] + ' ' + data.summary.split(' ')[1] : 'User';
+                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=300&background=4A90E2&color=fff&bold=true&rounded=true`;
+                    
+                    console.log("Original image URL:", originalUrl);
+                    console.log("Fallback URL:", fallbackUrl);
+                    
+                    profilePic.src = originalUrl || fallbackUrl;
+                    
+                    // Add error handler for failed LinkedIn images
+                    profilePic.onerror = function() {
+                        console.log("❌ Image failed to load:", this.src);
+                        console.log("Original image failed, using fallback");
+                        this.src = fallbackUrl;
+                        this.onerror = null; // Prevent infinite loop
+                    };
+                    
+                    profilePic.onload = function() {
+                        console.log("✅ Image loaded successfully:", this.src);
+                        console.log("Profile image loaded successfully");
+                    };
+                }
+                
+                if (summary) summary.textContent = data.summary || "No summary available";
+                if (facts) createHtmlList(facts, data.facts || []);
+                if (iceBreakers) createHtmlList(iceBreakers, data.ice_breakers || []);
+                if (topicsOfInterest) createHtmlList(topicsOfInterest, data.topics_of_interest || []);
+
+                spinner.style.display = "none";
+                resultDiv.style.display = "block";
+                
+                console.log("✅ Results displayed successfully");
+            }
+            function showProfileSelection(profiles) {
+                console.log("🎯 showProfileSelection called with:", profiles);
+                currentProfiles = profiles;
+                console.log("Number of profiles:", profiles.length);
+                
+                // Hide spinner and existing result
+                spinner.style.display = "none";
+                result.style.display = "none";
+                
+                const resultDiv = document.getElementById('result');
+                console.log("Result div found:", !!resultDiv);
+                
+                let html = '<h3>Multiple profiles found. Please select:</h3><div class="profiles-grid">';
+                
+                profiles.forEach((profile, index) => {
+                    console.log(`Profile ${index + 1}:`, profile);
+                    html += `
+                        <div class="profile-option" onclick="selectProfile('${profile.url}')">
+                            <img src="${profile.picture || 'https://via.placeholder.com/80x80/cccccc/ffffff?text=?'}" 
+                                alt="Profile Picture" class="profile-pic" 
+                                onerror="this.src='https://via.placeholder.com/80x80/cccccc/ffffff?text=?'">
+                            <div class="profile-info">
+                                <strong>${profile.name || 'Name not found'}</strong><br>
+                                <small>${profile.preview || 'No description'}</small><br>
+                                <em>${profile.url.split('/in/')[1] || profile.url}</em>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                console.log("Generated HTML:", html.substring(0, 200) + "...");
+                
+                resultDiv.innerHTML = html;
+                resultDiv.style.display = "block";
+                console.log("✅ Profile selection should now be visible");
             }
         </script>
     </body>
